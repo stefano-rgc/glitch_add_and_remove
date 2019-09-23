@@ -62,7 +62,9 @@ Polynomial degree of the fit = 3
 =========================================
 ```
 
-To run the example, try to excute the following line in the console:
+### Run the program
+
+To reproduce the example, execute the following line in the console:
 
 ```
 $python3 polypatch_A4.py  model.amdl 
@@ -74,7 +76,7 @@ Current version can operate only with stellar models stored as unformatted AMDL
 files, which is the format that the Aarhus adiabatic pulsation code (ADIPLS, Chistensen-
 Dalsgaard 2008) uses.
 
-Given an unformated AMDL stellar model, the program modifies the variable A4 (square of the dimensionless buoyancy frequency) within it by adding a Gaussian-like glitch accordingly to Eq. (13) in Cunha et al. 2019. The input parameters 
+Given an unformated AMDL stellar model, the program modifies the variable A4 (square of the dimensionless buoyancy frequency) within it by adding a Gaussian-like glitch accordingly to Eq. (13) in Cunha et al. 2019. The modification in the A4 profile is done in a consistent way by a correspondent sole modification of the first adiabatic exponent, as described in the section 2.3 of Ball et al. 2018 ("Surface effects on the red giant branch"). The input parameters 
 are the amplitude, width and position of the Gaussian. 
 
 The interface of the program consist of two panels:
@@ -110,7 +112,7 @@ Short explanation:
 - Fourth, it adds the glitch in the same way as section (1).
 
 
-### 3. Remesh of the model (narrow glitches)
+### (3) Remesh of the model (narrow glitches)
 
 ![alt text](https://github.com/stefano-rgc/glitch_add_and_remove/blob/master/exemplary_images/add_glitch3.gif)
 
@@ -120,3 +122,25 @@ Short explanation:
 - Second, adds a glitch which is under sampled.
 - Third, it selects the interval where to remesh the model. Then a dialog pops up asking how many new meshpoints add between each original pair.
 - Fourth, it selects the interval where the glitch will be added. Then adds it not by the cursor but by clicking the button (**done this way because, if not new Gaussian parameters are specificated, then the program uses the ones from the previous Gaussian, in this case, the undersampled Gaussian**).
+
+### Run the program
+
+To reproduce the examples, execute the following line in the console:
+
+```
+python3 -W ignore add_gaussian_A4.py model.amdl -t adipls -b 0,0.5 
+```
+
+The option **'-W ignore'** is optional and hides the warning prints.
+
+The program offers multiple options. A more complete example would be the following;
+
+```
+python3 -W ignore add_gaussian_A4.py model.amdl -t adipls -l 0.00568 -w 0.00048 -A 0.00343776 -i yes -b 0,0.5 -s yes -v not -o model.amdl.modified -f not -i yes
+```
+
+**In particular, the flag '-i yes/not' determines if the program runs interactively or not**. For the meaning of the other flags, see the documentation of the program via 
+
+```
+python3 add_gaussian_A4.py -h
+```
