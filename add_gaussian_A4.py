@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.widgets as mwidgets 
 import tomso.gyre
 import tomso.adipls
-from IPython import embed
 import tkinter
 from tkinter import Tk, simpledialog
 from tkinter.filedialog import askopenfilename
