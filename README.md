@@ -69,6 +69,11 @@ To reproduce the example, execute the following line in the console:
 ```
 $python3 polypatch_A4.py  model.amdl 
 ```
+Extra documentation can be accessed via
+
+```
+$python3 polypatch_A4.py -h
+```
 
 # Add a Gaussian-like glitch to a stellar model:
 
