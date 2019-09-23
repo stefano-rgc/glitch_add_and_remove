@@ -18,5 +18,9 @@ glitch into/from the buoyancy profile of an already existing stellar model, that
 modes is also provided as well as the possibility to remesh the model to allow for a very narrow glitch.
 The modification to the buoyancy frequency is done in a consistent way by a correspondent sole
 modification of the first adiabatic exponent as described in Ball et al. 2018, section 2.3. The program
-counts with an interactive GUI as well as a command line mode and is available as a Github repository
-at https://github.com/stefano-rgc/.
+counts with an interactive GUI as well as a command line mode.
+
+### 1. Program to remove a glitch:
+
+
+![alt text](https://ibb.co/6BYH79w)
