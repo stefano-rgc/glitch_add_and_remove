@@ -69,7 +69,7 @@ Polynomial degree of the fit = 3
 
 ### Run the program
 
-Make sure you have installed the following Python packages:
+Make sure you are using Python3 and have installed the following Python packages:
 
   - Numpy (https://www.numpy.org/)
   - Matplotlib (https://matplotlib.org/)
@@ -82,7 +82,7 @@ To reproduce the example, execute the following line in the console:
 ```
 $python3 polypatch_A4.py  model.amdl 
 ```
-Extra documentation can be accessed via
+Extra documentation can be accessed from within Python via
 
 ```
 >>> help(polypatch_A4)
@@ -146,7 +146,7 @@ After closing the windows, the program will prompt the user whether to save the 
 
 ### Run the program
 
-Make sure you have installed the following Python packages:
+Make sure you are using Python3 and have installed the following Python packages:
 
   - Numpy (https://www.numpy.org/)
   - Matplotlib (https://matplotlib.org/)
