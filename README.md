@@ -43,4 +43,26 @@ and rescaling, which are all useful for data exploration. The figure below shows
 
 ![alt text](https://github.com/stefano-rgc/glitch_add_and_remove/blob/master/exemplary_images/remove_glitch.gif)
 
+Short explanation:
+
+- First, it zooms in on the glitch-like feature.
+- Second, it selects the interval to be considered for the fit (red curve).
+- Third, it selects the interval to be ecluded from the fit (black vertical lines).
+- Fourth, it performs the polynomial fit by selecting a degree and then clicking the button (green curve).
+
+After closing the windows, the program will prompt the user whether to save the changes and a name to output the new AMDL model. The following summary will be display on the console:
+
+=========================================
+Interval for the fit:
+xmin = 0.0143, 	xmax_fit = 0.0313
+=========================================
+Interval excluded from the fit:
+xmin = 0.0192, 	xmax = 0.0252
+=========================================
+Polynomial degree of the fit = 3
+=========================================
+
+
+
+
 # Add a Gaussian-like glitch to a stellar model:
