@@ -90,6 +90,8 @@ Extra documentation can be accessed via
 
 # Add a Gaussian-like glitch to a stellar model:
 
+> The parametrization of the Gaussian in the this code follows an earlier version of Cunha et al. 2019. Such parametrization, eq. (13) within the paper, was updated in its lastest version (https://arxiv.org/abs/1909.04966) and the current version of this code still needs to be accordingly. As temporary mitigation, such update in the parametrization does not invalidate this code.    
+
 Current version can operate only with stellar models stored as unformatted AMDL
 files, which is the format that the Aarhus adiabatic pulsation code (ADIPLS, Chistensen-
 Dalsgaard 2008) uses.
