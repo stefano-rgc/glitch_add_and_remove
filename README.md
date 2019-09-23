@@ -112,3 +112,11 @@ Short explanation:
 
 ### 3. Remesh of the model (narrow glitches)
 
+![alt text](https://github.com/stefano-rgc/glitch_add_and_remove/blob/master/exemplary_images/add_glitch3.gif)
+
+Short explanation:
+
+- First, it zooms in until the resolution of the meshpoints is visible.
+- Second, adds a glitch which is under sampled.
+- Third, it selects the interval where to remesh the model. Then a dialog pops up asking how many new meshpoints add between each original pair.
+- Fourth, it selects the interval where the glitch will be added. Then adds it not by the cursor but by clicking the button (done this way because, if not new Gaussian parameters are specificated, then the program uses the ones from the previous Gaussian, in this case, the undersampled Gaussian).
