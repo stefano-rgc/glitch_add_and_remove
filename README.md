@@ -1,5 +1,7 @@
 # glitch_add_and_remove
 
+## Context
+
 The asymptotic analysis of the pulsation equations predicts regularly-spaced periods for gravity
 modes. These periods get deflected when a sharp variation in the buoyancy frequency, associated with
 strong chemical gradients, is present. These features are known as glitches and their study is one of
@@ -20,7 +22,8 @@ The modification to the buoyancy frequency is done in a consistent way by a corr
 modification of the first adiabatic exponent as described in Ball et al. 2018, section 2.3. The program
 counts with an interactive GUI as well as a command line mode.
 
-### 1. Program to remove a glitch:
+## Program to remove a glitch:
 
+![alt text]()
 
-![alt text](https://ibb.co/6BYH79w)
+## Program to add a Gaussian-like glitch:
