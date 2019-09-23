@@ -52,6 +52,7 @@ Short explanation:
 
 After closing the windows, the program will prompt the user whether to save the changes and a name to output the new AMDL model. The following summary will be display on the console:
 
+```
 =========================================
 Interval for the fit:
 xmin = 0.0143, 	xmax_fit = 0.0313
@@ -61,8 +62,13 @@ xmin = 0.0192, 	xmax = 0.0252
 =========================================
 Polynomial degree of the fit = 3
 =========================================
+```
 
+To run the example, try to excute the following line in the console:
 
+```
+$python3 polypatch_A4.py  model.amdl 
+```
 
 
 # Add a Gaussian-like glitch to a stellar model:
