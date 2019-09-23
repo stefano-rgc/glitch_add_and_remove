@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import tomso.gyre
 import tomso.adipls
 import tkinter
-from IPython import embed
 from pymedley.interactive import fit_polynomial
 
 ################################################################################
@@ -112,8 +111,8 @@ def polypatch_A4(filename, verbose=False):
     A_modified = A.copy()
 
     # Ceate the Matplotlib plot for the profile A4 (i.e., the dimensionaless N^2)
-    ylabel_adipls = r'$A4\ \equiv\ \frac{r}{g}N^2\ =\ \frac{1}{\Gamma_1}\frac{d \ln p}{d \ln r} - \frac{d \ln \rho}{d \ln r}$'
-    xlabel_adipls = r'$A0\ \equiv\ $Fractional radius'
+    ylabel_adipls = r'$A4\ \equiv\ \frac{r}{g}N^2$'
+    xlabel_adipls = r'$A0\ \equiv\ (r/R)$'
     label_adipls = 'A4'
     fig = plt.figure()
     ax_A4 = plt.axes()

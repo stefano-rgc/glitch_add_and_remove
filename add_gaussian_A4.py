@@ -8,6 +8,7 @@ import matplotlib.widgets as mwidgets
 import tomso.gyre
 import tomso.adipls
 from IPython import embed
+import tkinter
 from tkinter import Tk, simpledialog
 from tkinter.filedialog import askopenfilename
 import pickle
@@ -17,223 +18,7 @@ from pymedley.math import odd_number
 from pymedley.mpl import clear_line2D, axvlines
 from pymedley.meta import get_kwargs
 from pymedley.interactive import Textbox, Button, Checkbox
-
-class Read_stellar_model:
-    ''' Collect and organize the information about the stellar model'''
-
-    def __init__(self,\
-                 filename,\
-                 created_by,\
-                 buoyancy_cavity_between,\
-                 notes='',\
-                 G=6.67428e-08,\
-                 l=1,\
-                 Verbose=False):
-
-        '''
-        Purpose:
-
-            Read the relevant data from a stellar model created by ADIPLS
-            (an unformated AMDL file).
-
-        Inputs:
-
-            - filename (string):
-
-                Name pointing to the stellar model file to be modified.
-
-            - created_by (string):
-
-                Type of stellar model. So far, only support for 'adipls'.
-
-            - buoyancy_cavity_between (float, float):
-
-                Tuple indicating the upper and lower limits of the interval (in
-                fractional radius) where to search for the buoyancy cavity.
-
-        Optional Inputs:
-
-            - notes:
-
-                Comments.
-
-            - G (float):
-
-                Gravitational constant defined as positive in units of dyne cm**2 g**-1.
-                Value 6.67428e-08 taken from https://tomso.readthedocs.io/en/latest/adipls.html
-
-            - l (integer):
-
-                Angular degree mode.
-
-            - Verbose:
-
-                Print extra information useful for debugging.
-        '''
-
-        # Support only for stellar model in ADIPLS format
-        if created_by != 'adipls':
-            raise ValueError('Please make sure to set the variable "created_by" to "adipls". Support for MESA-GYRE stellar model may be incorporated in the future.')
- 
-        # Basic info:
-        self.type = created_by
-        self.filename = filename
-        self.G = G
-        self.notes = notes
-        self.l = l
-        self.L = np.sqrt( self.l * ( self.l + 1 ) )
-        self.buoyancy_cavity_between = buoyancy_cavity_between
-
-        self.read_data_form_file(Verbose=Verbose)
-        self.create_profiles(Verbose=Verbose)
-
-    def add_comment(self, comment, Verbose=False):
-        vertical_space = 2*'\n'
-        self.notes = self.notes + vertical_space + comment
-        print( "The following comment has been added as a new line to the attribute 'notes':" )
-        print( "|New comment: {}\n".format(comment) )
-
-    def show_notes(self):
-        print(self.notes)
-
-    def read_data_form_file(self, Verbose=False):
-        if self.type == 'adipls':
-            D, A = tomso.adipls.load_amdl(self.filename)
-            self.D = D
-            self.A = A
-            if Verbose:
-                print('[from class stellar_model, function read_data_form_file()]:')
-                print('| AMDL attributes "A" and "D" have been set.\n')
-
-    def set_adipls_new_data(self, D, A, Verbose=False):
-        if self.type != 'adipls':
-            raise ValueError("The attribute 'type' is not 'adipls'.")
-        self.D = D
-        self.A = A
-        if Verbose:
-            print( '[from class stellar_model, function set_adipls_new_data()]:' )
-            print( '| AMDL attributes "A" and "D" have been overwritten.')
-            print( '| The profiles will be overwritten accordingly next.' )
-        self.create_profiles(Verbose=Verbose)
-
-    def increase_resolution(self, fractional_r_min, fractional_r_max, extra_meshpoints, Verbose=False, overwrite=False):
-        try: # To avoid any copy into itself more than one. 
-            del self.new_resolution
-        except AttributeError as e:
-            if Verbose:
-                print('Harmless AttributeError:::', e)
-        finally: # Make a copy of the model to later change its mesh
-            self.new_resolution = deepcopy(self)
-
-        self.new_resolution.extra_meshpoints = extra_meshpoints
-
-        if self.type == 'adipls':
-            #! Use free variables as starred r and 3*sigma in radius.
-            #! Use that region to define the mask to use below.
-
-            # Make plot for a denser x so it will show possible wiggles
-
-            # Mask indicating where to increase the resolution
-            c1 = self.fractional_r >= fractional_r_min
-            c2 = self.fractional_r <= fractional_r_max
-            ind_higher_resolution = np.where( c1 & c2 )
-            mask_higher_resolution = np.zeros(self.A0.shape, dtype=bool)
-            mask_higher_resolution[ind_higher_resolution] = True
-
-            # Fraction distances between one element and the next one in A0 (fractional radius)
-            fractions = np.arange( 0.0, 1.0, 1/(1+extra_meshpoints) )
-            # The fraction 0.0 corresponds to the original point
-            fractions = fractions[1:]
-            # Get the differences between fractional radius
-            A0_diff_higher_resolution = np.diff(self.A0[mask_higher_resolution])
-            # Initialize variable where to save the new data
-            A0_higher_resolution = np.array([])
-            for fraction in fractions:
-                A0_higher_resolution = np.concatenate( [ A0_higher_resolution, self.A0[mask_higher_resolution][:-1] + A0_diff_higher_resolution * fraction ] )
-            # Add the original points
-            A0_higher_resolution = np.concatenate( [ A0_higher_resolution, self.A0 ] )
-            A0_higher_resolution = np.sort( A0_higher_resolution )
-            
-            # Get the other variables in higher resolution
-            A_given_A0 = interp1d(self.A0, self.A, axis=0)
-            A_higher_resolution = A_given_A0(A0_higher_resolution)
-           
-        if overwrite:
-            self.set_adipls_new_data(self.D,A_higher_resolution, Verbose=True)
-        else:
-            self.new_resolution.ind = ind_higher_resolution
-            self.new_resolution.mask = mask_higher_resolution
-            self.new_resolution.set_adipls_new_data(self.D,A_higher_resolution, Verbose=True)
-
-    def over_write_new_resolution(self):
-        self.set_adipls_new_data(self.D, self.new_resolution.A, Verbose=True)
-        del self.new_resolution
-
-    def create_profiles(self, Verbose=False):
-        if self.type == 'adipls':
-            self.A0 = self.A[:,0]
-            self.A1 = self.A[:,1]
-            self.A2 = self.A[:,2]
-            self.A3 = self.A[:,3]
-            self.A4 = self.A[:,4]
-            self.A5 = self.A[:,5]
-            # Derivated quantities
-            R, r, g = tomso.adipls.amdl_get(['R', 'r', 'g'], self.D, self.A, G=self.G)
-            self.r = r # Units: cm
-            self.R = R # Units: cm
-            self.g = g # Units: cm/s**2
-            self.fractional_r = self.r/self.R
-            # Note this does not include the turning points but only the region in between
-            condition1 = self.A4 > 0
-            condition2 = self.fractional_r > self.buoyancy_cavity_between[0]
-            condition3 = self.fractional_r < self.buoyancy_cavity_between[1]
-            ind_buoyancy_cavity = np.where( (condition1) & (condition2) & (condition3) )
-            self.ind_buoyancy = ind_buoyancy_cavity
-            mask_buoyancy_cavity = np.zeros(self.A4.shape, dtype=bool)
-            mask_buoyancy_cavity[ind_buoyancy_cavity] = True
-            self.mask_buoyancy = mask_buoyancy_cavity
-            # For convenience, also define the above variables only for the buoyancy cavity only
-            self.A0_buoyancy = self.A0[self.mask_buoyancy]
-            self.A1_buoyancy = self.A1[self.mask_buoyancy]
-            self.A2_buoyancy = self.A2[self.mask_buoyancy]
-            self.A3_buoyancy = self.A3[self.mask_buoyancy]
-            self.A4_buoyancy = self.A4[self.mask_buoyancy]
-            self.A5_buoyancy = self.A5[self.mask_buoyancy]
-            self.r_buoyancy = self.r[self.mask_buoyancy]
-            self.g_buoyancy = self.g[self.mask_buoyancy]
-            self.fractional_r_buoyancy = self.fractional_r[self.mask_buoyancy]
-            # Get the dimensional N2 and N frequencies within the buoyancy cavity
-            # For consistency, keep the sufix "_buoyancy"
-            self.N2_buoyancy = self.g_buoyancy * self.A4_buoyancy / self.r_buoyancy #Uunits: Hz**2
-            self.N_buoyancy = np.sqrt(self.N2_buoyancy) # Units Hz
-            # Total buoyancy depth. Note that the integral do not include the immediate vicinity of the turning points
-            self.omega_g_buoyancy = integrate.simps( self.L*self.N_buoyancy/self.r_buoyancy, self.r_buoyancy )
-            # Buoyancy depth
-            self.buoyancy_radius = integrate.cumtrapz(self.L*self.N_buoyancy/self.r_buoyancy, self.r_buoyancy, initial=0)
-            # Take the outer turning point as the start or zero point
-            self.buoyancy_depth = self.omega_g_buoyancy - self.buoyancy_radius
-            # Normalize the buoyancy depth
-            self.normalized_buoyancy_depth = self.buoyancy_depth/self.omega_g_buoyancy
-            # Normalize the buoyancy radius
-            self.normalized_buoyancy_radius = self.buoyancy_radius/self.omega_g_buoyancy
-            if Verbose:
-                # Print notice
-                print( "[from class stellar_model, function create_profiles()]:" )
-                print( "The following atributes has been set:" )
-                print( "| 'A1', 'A2', 'A3', 'A4', 'A5'" )
-                print( "| 'R', 'r', 'g', 'fractional_r'" )
-                print( "| 'ind_buoyancy', 'mask_buoyancy'" )
-                print( "| 'A0_buoyancy', A1_buoyancy', 'A2_buoyancy'" )
-                print( "| 'A3_buoyancy', 'A4_buoyancy', A5_buoyancy'" )
-                print( "| 'r_buoyancy', 'g_buoyancy', 'fractional_r_buoyancy'" )
-                print( "| 'N2_buoyancy', 'N_buoyancy', 'omega_g_buoyancy'" )
-                print( "| 'buoyancy_radius', 'buoyancy_depth'")
-                print( "| 'normalized_buoyancy_depth''and''normalized_buoyancy_radius'")
-
-    def save(self, output_name, Verbose=False):
-        if self.type == 'adipls':
-            tomso.adipls.save_amdl(output_name, self.D, self.A)
-            print( "| Stellar model saved under the name '{}'\n".format(output_name) )
+from pymedley.astero import Read_stellar_model
 
 class Make_plots:
     '''Object containing the plots from the instance of the class Read_stellar_model'''
@@ -242,7 +27,7 @@ class Make_plots:
         if not stellar_model.type == 'adipls':
             raise ValueError("Support for ADIPLS model only. Your model is '{}'.".format(stellar_model.type))
         self.stellar_model_type = stellar_model.type
-        # Create two subplots: N^2 VS the normalized buoyancy depth  and for A[:,4] VS fractional radious
+        # Create two subplots: N^2 VS the normalized buoyancy depth  and for A[:,4] VS fractional radius
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(30, 6))
         self.figure = fig
         self.ax1 = ax1
@@ -257,13 +42,10 @@ class Make_plots:
                    grid=True,\
                    scale='log',\
                    ylabel_ax1=r'$N^2$ (Hz$^2$)',\
-                   xlabel_ax1='Normalized buoyancy depth',\
-                   title_ax1='[Press \'enter\' to enter the interval selection mode]   [Press \'shift+enter\' simulate the right button of the mouse]',\
+                   xlabel_ax1=r'Buoyancy depth $(\omega_g)$',\
                    label_ax1=r'$N^2$',\
                    label_ax2_adipls=r'$A4$',\
-                   ylabel_ax2_adipls=r'$A4\equiv\frac{r}{g}N^2=\frac{1}{\Gamma_1}\ \frac{d\ln P}{d\ln r}\ -\ \frac{d\ln \rho}{d\ln r}$',\
-                   label_ax2_gyre=r'$N^2$',\
-                   ylabel_ax2_gyre=r'$N^2$ (Hz$^2$)',\
+                   ylabel_ax2_adipls=r'$A4\equiv\frac{r}{g}N^2$',\
                    Verbose=False,
                    from_init=False):
         '''Make plots'''
@@ -296,7 +78,6 @@ class Make_plots:
 
         self.ax1.set_ylabel(ylabel_ax1, fontsize=ylabel_fontsize)
         self.ax1.set_xlabel(xlabel_ax1, fontsize=xlabel_fontsize)
-        self.ax1.set_title(title_ax1)
         self.ax1.legend(loc='best', ncol=1, framealpha=0.5, fontsize=legend_fontsize)
 
         if from_init:
@@ -313,7 +94,7 @@ class Make_plots:
             self.ax2.set_yscale(self.ax2.get_yscale())
             self.ax2.set_xscale(self.ax2.get_xscale())
 
-        self.ax2.set_xlabel('Fractional radious',fontsize=xlabel_fontsize)
+        self.ax2.set_xlabel(r'$A0 \equiv r/R$',fontsize=xlabel_fontsize)
         self.ax2.legend(loc='best', ncol=1, framealpha=0.5, fontsize=legend_fontsize)
 
         # Collect specific information
@@ -494,7 +275,7 @@ def parse_user_command_line_input(args):
 
     # Limits of the interval to search for the buoyancy cavity (units of fractional radius)
     if not '-b' in flags:
-        raise ValueError("**The flag '-b' is mandatory. Please, specify the interval to search for the buoyancy cavity in units of fractional radious.**")
+        raise ValueError("**The flag '-b' is mandatory. Please, specify the interval to search for the buoyancy cavity in units of fractional radius.**")
     # Extract the flag from the dictionary
     temp = flags_and_values.pop('-b')
     temp = temp.split(',')
@@ -542,12 +323,12 @@ def parse_user_command_line_input(args):
         except ValueError:
             raise ValueError("**Input a valid number for the half of the FWHM of the Gaussian-like function in units of normalized buoyancy depth**")
 
-    # Check if the parameter for the amplitud of the Gaussian-like function is set (as described in Margarida et. al.'s 2019 paper)
+    # Check if the parameter for the amplitud of the Gaussian-like function is set (as described in Cunha et. al.'s 2019 paper)
     if '-A' in flags:
         try:
             flags_and_values['-A'] = np.float( flags_and_values['-A'] )
         except ValueError:
-            raise ValueError("**Input a valid number for the amplitud of the Gaussian-like function in units of normalized buoyancy depth (as described in Margarida et. al.'s 2019 paper)**")
+            raise ValueError("**Input a valid number for the amplitud of the Gaussian-like function in units of normalized buoyancy depth (as described in Cunha et. al.'s 2019 paper)**")
 
     # Convert the user command-line flag-value input into proper Python-language variables
     for f in ['-s', '-v', '-i', '-f']:
@@ -570,7 +351,7 @@ def parse_user_command_line_input(args):
     # Return parsed command line
     return filename, stellar_model_type, buoyancy_cavity_between, flags_and_values                    
 
-def glitch_wrt_model(gaussian_loc, stellar_model, Verbose=True, comment=''):
+def glitch_wrt_model(gaussian_loc, stellar_model, Verbose=False, comment=''):
     '''Compute values of the stellar model at the position od the glitch'''
     
     if np.all(np.diff(stellar_model.normalized_buoyancy_depth) > 0):
@@ -1075,8 +856,8 @@ def add_gaussian_interactively(stellar_model,\
         normalized_buoyancy_depth_wavelength_estimation = np.interp(fractional_radius_wavelength_estimation, stellar_model.fractional_r_buoyancy, stellar_model.normalized_buoyancy_depth)
 
         # Plot as vertical lines
-        iplots['ax1']['mode_line2D'] = axvlines(normalized_buoyancy_depth_wavelength_estimation, ax=plots.ax1, color='orange', label='Wavelength estimation', linewidth=0.5)
-        iplots['ax2']['mode_line2D'] = axvlines(fractional_radius_wavelength_estimation[mask_fractional_radius_wavelength_estimation], ax=plots.ax2, color='orange', label='Wavelength estimation', linewidth=0.5)
+        iplots['ax1']['mode_line2D'], = axvlines(normalized_buoyancy_depth_wavelength_estimation, ax=plots.ax1, color='orange', label='Wavelength estimation', linewidth=0.5)
+        iplots['ax2']['mode_line2D'], = axvlines(fractional_radius_wavelength_estimation[mask_fractional_radius_wavelength_estimation], ax=plots.ax2, color='orange', label='Wavelength estimation', linewidth=0.5)
 
         # Redraw
         plots.redraw()
@@ -1126,30 +907,22 @@ def add_gaussian_interactively(stellar_model,\
                       ax2x,\
                       ax2y):
         '''Plot the Gaussian in the two axes'''
-
         # Define some convenient temporal aliases
         modulation = gaussian_modulation_buoyancy[mask_gaussian]
         normalized_buoyancy_depth = normalized_buoyancy_depth[mask_gaussian]
-
         clear_line2D(plots.figure, iplots['ax1']['gaussian_line2D'], plots.ax1, redraw=False)
         clear_line2D(plots.figure, iplots['ax2']['gaussian_line2D'], plots.ax2, redraw=False)
         clear_line2D(plots.figure, iplots['ax1']['gaussian_modulation_line2D'], plots.ax1, redraw=False)
-        
         # Get the y limits of the plot before ploting the modulation in order to put the same limits after plotting the modulation
         ylim = plots.ax1.get_ylim()
-
         # Plot the modulation in yellow
         iplots['ax1']['gaussian_modulation_line2D'], = plots.ax1.plot(normalized_buoyancy_depth, modulation_scale * modulation, linestyle='solid', marker='None', color='yellow', markerfacecolor='None', markeredgecolor='None', label=r'Modulation $\sqrt{N_0^\star/N_0\ r/r^\star}$ (arbitrary units)')
-        
         # Set the y limits same as before plotting the modulation
         plots.ax1.set_ylim(ylim)
-        
         # Plot the Gaussian
         iplots['ax1']['gaussian_line2D'], = plots.ax1.plot(normalized_buoyancy_depth, results['new_N2_gaussian'], linestyle='solid', marker='o', color='lime', markerfacecolor='lime', markeredgecolor='None', label=r'Modified $N^2$')        
-        
         # Plot
         iplots['ax2']['gaussian_line2D'], = plots.ax2.plot(ax2x, ax2y, linestyle='solid', marker='o', color='lime', markerfacecolor='lime', markeredgecolor='None', label=r'Modified $A$')              
-        
         # Redraw
         plots.redraw() 
 
@@ -1158,7 +931,6 @@ def add_gaussian_interactively(stellar_model,\
                                         extra_meshpoints,\
                                         overwrite=False):
         '''Increase the number of meshpoints in the model'''
-
         if stellar_model.type == 'adipls':
             # Find the correspond A0 (fractional radius)
             if np.all(np.diff(stellar_model.normalized_buoyancy_depth) > 0):
@@ -1199,7 +971,7 @@ def add_gaussian_interactively(stellar_model,\
                 # Setup the root window.
                 Tk().withdraw()
                 # Ask user for the number of new points 
-                extra_meshpoints = simpledialog.askstring('Enter integer number', 'Number of new points\nin between original points:') or None
+                extra_meshpoints = simpledialog.askstring('Enter integer number', '\n     Number of new meshpoints to add     \n     between each original pair:     \n') or None
                 # If the user does not input any value
                 if extra_meshpoints is None:
                     pass
@@ -1274,7 +1046,6 @@ def add_gaussian_interactively(stellar_model,\
                     gaussian_p.update_sigma(gaussian_sigma)
 
                     # new N2 -> (3) hat_A_G (keeping unchanged sigma):
-                    
                     results['gaussian_N2'] = iinput.released_ydata # Formerly called 'peak'
                     gaussian_amplitude = results['gaussian_N2']/starred_values['N2'] - 1
                     gaussian_hat_A_G = gaussian_amplitude * np.sqrt(2*np.pi) * gaussian_sigma
@@ -1305,6 +1076,71 @@ def add_gaussian_interactively(stellar_model,\
                                                             gaussian_mask=gaussian_interval['ax1']['mask'],\
                                                             starred_values_wrt_original=starred_values,\
                                                             plot=False)
+
+
+    def window_info(_):
+        '''Display information about how to use'''
+        # Text separators
+        sep1 = '--------------------------------------------------------------------------'
+        sep2 = '================================================================'
+        sep3 = ''
+        # Info text
+        title = 'Info'
+        p0 = '>>                           Panels                           <<'
+        p1 = ('> Left panel shows the buoyancy profile as parametrized in Eq.\n'
+              '  (13) in Cunha et al. 2019. The Gaussian will be added to\n'
+              '  this panel and then translated into the right panel')
+        p2 = ('> Right panel shows the buoyancy profile as stored in the\n'
+              '  AMDL model.')
+        p3 = 'Both panels support the basic Matplotlib interactive tools'
+        c0 = '>>                           Cursor                           <<'
+        c1 = 'To enable recognition of the mouse buttons, first hit enter'
+        c1 = '> The left button selects the interval to add the Gaussian.'
+        c2 = ("> The right button defines the parameters of the Gaussian:\n\n"
+              "    * The cursor's position when pressing defines the location.\n\n"
+              "    * The cursor's position when releasing defines the peak.\n\n"
+              "    * The distance between the pressing and releasing defines\n"
+              "      the FWHM.")
+        c3 = ('> The center button selects the interval where to increase the\n'
+              '  number of meshpoints.')
+        c4 = ("> The behaviour of the right button can be simulated by\n"
+              "  the left button if this is preceded by the keystroke\n"
+              " 'Shift+Enter'.\n\n"
+              "  The behaviour of the center button can be simulated by the\n"
+              "  left button if this is preceded by the keystroke 'Ctrl+Enter'.")
+        b0 = '>>                           Buttons                          <<'
+        b1 = ('> The button [Add Gaussian] adds a Gaussian using the values\n'
+              '  enter in the text boxes. Notice that you have to hit Enter or\n'
+              '  click on the text box to load the number that it displays.\n\n'
+              '  If the button is pressed after adding a Gassian using the,\n'
+              '  cursor then the loaded Gaussian parameters are the ones from\n'
+              '  that Gaussian. ' )
+        b2 = ('> The button [Add mode scale] plots estimations of the\n'
+              '  wavelength from a GYRE mode file.')
+        cb0 = '>>                          Check box                         <<'
+        cb1 = ('> Mark the checkbox [w.r.t. final model] to make the button\n'
+              '  [Add Gaussian] treat the loaded Gaussian parameters with\n'
+              '  respect to the final model (with the added Gaussian) instead\n'
+              '  of the original model.')
+        e0 = '>>                           Exit                             <<'
+        e1 = ('> When closing the plot, you will be asked in the terminal\n'
+               '  whether to save the changes.')
+        # Message to display    
+        message = ('\n\n' + '\n\n'.join([sep2,p0,sep2,p1,sep3,p2,\
+                                         sep2,c0,sep2,c1,sep3,c2,sep3,c3,sep3,c4,\
+                                         sep2,b0,sep2,b1,sep3,b2,\
+                                         sep2,cb0,sep2,cb1,\
+                                         sep2,e0,sep2,e1]) + '\n\n')
+        # Create blank windows
+        window = tkinter.Tk()
+        # Create title
+        window.title(title)
+        # Add content and organize its geometry
+        tkinter.Label(window, text=message, justify = 'left').pack()
+        # Modify canvas and organize its geometry
+        tkinter.Canvas(window, width = 600, height=0).pack()
+        # Display the window
+        window.mainloop()
 
     def gaussian_parameters_wrt_final_model(stellar_model,\
                                             new_N2_gaussian,\
@@ -1393,7 +1229,8 @@ def add_gaussian_interactively(stellar_model,\
                    stellar_model,\
                    gaussian_modulation_buoyancy,\
                    gaussian_parameters,\
-                   comment=''):
+                   comment='',\
+                   Verbose=False):
         ''' Equeation (13) in the 2019 paper '''
 
         # Define some convenient temporal aliases
@@ -1406,10 +1243,11 @@ def add_gaussian_interactively(stellar_model,\
         new_N2_gaussian = N2 * ( 1 + modulation * scaled_gaussian )
         
         # Print the output values
-        print('')
-        print('[from get_new_N2():]')
-        gaussian_p.print(comment=comment)
-        print('')
+        if Verbose:
+            print('')
+            print('[from get_new_N2():]')
+            gaussian_p.print(comment=comment)
+            print('')
 
         return new_N2_gaussian
 
@@ -1479,17 +1317,17 @@ def add_gaussian_interactively(stellar_model,\
                                    coords=textboxes_coords[0] )
         
         textbox_hat_A_G = Textbox( function=read_hat_A_G,\
-                                   prompt_text=r'$\hat{A}_G$ '+r'$(\omega_g^r / \omega_g)$ = ',\
+                                   prompt_text=r'$\hat{A}_G$ '+r'$(\omega_g)$ = ',\
                                    initial_text='{}'.format(gaussian_hat_A_G_initial_text), \
                                    coords=textboxes_coords[1] )
         
         textbox_sigma = Textbox(   function=read_sigma,\
-                                   prompt_text=r'$\Delta_g$ '+r'$(\omega_g^r / \omega_g)$ = ',\
+                                   prompt_text=r'$\Delta_g$ '+r'$(\omega_g)$ = ',\
                                    initial_text='{}'.format(gaussian_sigma_initial_text),\
                                    coords=textboxes_coords[2] )
         
         textbox_loc = Textbox(     function=read_loc,\
-                                   prompt_text=r'$\omega_g^{r \star} / \omega_g$ = ',\
+                                   prompt_text=r'$\omega_g^{r \star} (\omega_g)$ = ',\
                                    initial_text='{}'.format(gaussian_loc_initial_text),\
                                    coords=textboxes_coords[3] )
 
@@ -1497,7 +1335,8 @@ def add_gaussian_interactively(stellar_model,\
         buttons_coords = [  (0.740, 0.05, 0.1, 0.040), \
                             (0.740, 0.01, 0.1, 0.040), \
                             (0.845, 0.05, 0.1, 0.040), \
-                            (0.845, 0.01, 0.1, 0.040)  ]
+                            (0.845, 0.01, 0.1, 0.040),
+                            (0.050, 0.01, 0.105, 0.040)  ]
 
         # Buttons
         button_add_mode_wavelenth = Button(     function=overplot_eigenmode_wavelength_scale,\
@@ -1509,12 +1348,17 @@ def add_gaussian_interactively(stellar_model,\
                                                 coords=buttons_coords[1] )
 
         button_add_gaussian = Button(           function=add_gaussian,\
-                                              text='Add Gaussian',\
+                                                text='Add Gaussian',\
                                                 coords=buttons_coords[2] )
 
         button_clear_gaussian = Button(         function=button_clear_Gaussian,\
                                                 text='Clear Gaussian',\
                                                 coords=buttons_coords[3] )
+    
+        button_info = Button(         function=window_info,\
+                                      text='Help',\
+                                      coords=buttons_coords[4] )
+
       
         # Coordenates for the the check box
         checkbox_coords = [ (0.05, 0.05, 0.105, 0.04) ]
@@ -1666,7 +1510,7 @@ def add_gaussian_A4(stellar_model,\
 
         Add a Gaussian-like glitch to the N^2 profile of an existing stellar
         model in AMDL format, where N is the Brunt Vaisala frequency. The
-        Gaussian-like function is parametrized as described in Margarida et al. 
+        Gaussian-like function is parametrized as described in Cunha et al. 
         2019. The modification to the buoyancy frequency is done in a consistent
         way by a correspondent sole modification of the first adiabatic exponent
         as described in Ball et al. 2018, section 2.3.
@@ -1837,7 +1681,7 @@ def add_gaussian_A4(stellar_model,\
                                created_by=stellar_model_type,\
                                buoyancy_cavity_between=buoyancy_between,\
                                G=G,\
-                               Verbose=Verbose)
+                               verbose=Verbose)
 
     # Make a plot of N2 vs buoyancy depth and a second plot vs the fractional radius
     plots = Make_plots(model)
@@ -1867,7 +1711,8 @@ if __name__ == "__main__":
     import sys
     import re
     # Optional inputs conveniently displayed.
-    optional_input = { 'gaussian_hat_A_G_initial_text':0.001750,\
+    optional_input = { 'gaussian_peak_initial_text':'',\
+                       'gaussian_hat_A_G_initial_text':0.001750,\
                        'gaussian_sigma_initial_text':0.000263,\
                        'gaussian_loc_initial_text':0.050000,\
                        'save':False,\

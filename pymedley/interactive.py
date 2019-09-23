@@ -4,7 +4,6 @@ import matplotlib.widgets as mwidgets
 import tkinter
 from pymedley.mpl import clear_line2D
 from pymedley.math import polyfit_with_fixed_points
-from IPython import embed
 
 ### Classes
 
@@ -83,9 +82,10 @@ def fit_polynomial(figure, axes, line2D, verbose=False):
         Optionally, select a sub-interval of X to be ignored by the fit.
 
         IMPORTANT: The code forces the fit to pass through the two last and two
-        first data point in the selected interval. This in order to achieve an 
+        first data point in the selected interval. This in order to achieve a 
         smoother mathing between the data and the fit. As a result, the degree 
-        of the fit must be 3 or higher. This is done by Lagrange multipliers.
+        of the fit must be 3 or higher. This is done by means of Lagrange
+        multipliers.
 
         The figure given as input can contain a legend, title, labels, etc.
 
@@ -147,7 +147,7 @@ def fit_polynomial(figure, axes, line2D, verbose=False):
         # Info text
         title = 'Info'
         t0 = '>> To enable recognition of the left and right buttons, first hit enter <<'
-        t1 = '> The left button selects the interval fot the fit by dragging on the plot.'
+        t1 = '> The left button selects the interval for the fit by dragging on the plot.'
         t2 = '> The right button selects an interval excluded to by excluded from the fit.'
         t3 = '> Press the button [Add fit] to generate the fit.'
         t4 = '> Mark the checkbox [Not refresh fit] to overplot different fits.'
@@ -400,7 +400,7 @@ def fit_polynomial(figure, axes, line2D, verbose=False):
     print('\n')
     print('=========================================')
     print('Interval for the fit:')
-    print('xmin = {:.3}, \txmax_fit = {:.3}'.format(interval['xmin_fit'], interval['xmax_fit']))
+    print('xmin = {:.3}, \txmax = {:.3}'.format(interval['xmin_fit'], interval['xmax_fit']))
     print('=========================================')
     print('Interval excluded from the fit:')
     print('xmin = {:.3}, \txmax = {:.3}'.format(interval['xmin_nonfit'], interval['xmax_nonfit']))
