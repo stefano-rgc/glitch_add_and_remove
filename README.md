@@ -121,9 +121,9 @@ Short explanation of the figure:
 1. It zooms in on the region where the glitch will be added.
 2. It selects the interval where the glitch will be added. (red curve).
 3. It uses the cursor to add and define the parameters of the Gaussian (green curve):
-  - The cursor's position when pressing click defines the location.
-  - The cursor's position when releasing click defines the peak.
-  - The distance between the pressing and releasing clicks defines the FWHM.
+   - The cursor's position when pressing click defines the location.
+   - The cursor's position when releasing click defines the peak.
+   - The distance between the pressing and releasing clicks defines the FWHM.
 4. Check how the changes look in the AMDL file (right panel).
 
 ### (2) Comparison with the mode wavelength
