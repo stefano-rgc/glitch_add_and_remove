@@ -20,7 +20,7 @@ The modification to the buoyancy frequency is done in a consistent way by a corr
 modification of the first adiabatic exponent as described in Ball et al. 2018, section 2.3. The program
 counts with an interactive GUI as well as a command line mode.
 
-# Remove a glitch from a stellar model:
+## Remove a glitch from a stellar model:
 
 The current version can operate only with stellar models stored as unformatted AMDL
 files, which is the format that the Aarhus adiabatic pulsation code (ADIPLS, Chistensen-
@@ -89,7 +89,7 @@ Extra documentation can be accessed from within Python via
 >>> help(polypatch_A4)
 ```
 
-# Add a Gaussian-like glitch to a stellar model:
+## Add a Gaussian-like glitch to a stellar model:
 
 
 |The parametrization of the Gaussian in this code follows an earlier version of  Cunha et al. 2019. Such parametrization, eq. (13) within the paper, was updated in its latest version (https://arxiv.org/abs/1909.04966) and the current version of this code still needs to be updated accordingly. As temporary mitigation, such update in the parametrization does not invalidate this code.|
