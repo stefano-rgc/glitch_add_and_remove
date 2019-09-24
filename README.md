@@ -82,6 +82,7 @@ To reproduce the example, execute the following line in the console:
 ```
 $python3 polypatch_A4.py  model.amdl 
 ```
+
 Extra documentation can be accessed from within Python via
 
 ```
@@ -90,7 +91,7 @@ Extra documentation can be accessed from within Python via
 
 # Add a Gaussian-like glitch to a stellar model:
 
-> **The parametrization of the Gaussian in this code follows an earlier version of Cunha et al. 2019. Such parametrization, eq. (13) within the paper, was updated in its latest version (https://arxiv.org/abs/1909.04966) and the current version of this code still needs to be accordingly. As temporary mitigation, such update in the parametrization does not invalidate this code.**
+> ***The parametrization of the Gaussian in this code follows an earlier version of Cunha et al. 2019. Such parametrization, eq. (13) within the paper, was updated in its latest version (https://arxiv.org/abs/1909.04966) and the current version of this code still needs to be accordingly. As temporary mitigation, such update in the parametrization does not invalidate this code.***
 
 The current version can operate only with stellar models stored as unformatted AMDL
 files, which is the format that the Aarhus adiabatic pulsation code (ADIPLS, Chistensen-
@@ -116,7 +117,10 @@ Short explanation:
 
 - First, it zooms in on the region where the glitch will be added.
 - Second, it selects the interval where the glitch will be added. (red curve).
-- Third, it uses the cursor to add and define the parameters of the Gaussian (green curve).
+- Third, it uses the cursor to add and define the parameters of the Gaussian (green curve):
+  - The cursor's position when pressing click defines the location.
+  - The cursor's position when releasing click defines the peak.
+  - The distance between the pressing and releasing clicks defines the FWHM.
 - Fourth, Check how the changes look in the AMDL file (right panel).
 
 ### (2) Comparison with the mode wavelength
