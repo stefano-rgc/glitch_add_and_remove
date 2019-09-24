@@ -46,12 +46,12 @@ and rescaling, which are all useful for data exploration. The figure below shows
 
 ![alt text](https://github.com/stefano-rgc/glitch_add_and_remove/blob/master/exemplary_images/remove_glitch.gif)
 
-Short explanation:
+Short explanation of the figure:
 
-1.First, it zooms in on the glitch-like feature.
-2.Second, it selects the interval to be considered for the fit (red curve).
-3.Third, it selects the interval to be included from the fit (black vertical lines).
-4.Fourth, it performs the polynomial fit by selecting a degree and then clicking the button (green curve).
+1. It zooms in on the glitch-like feature.
+2. It selects the interval to be considered for the fit (red curve).
+3. It selects the interval to be included from the fit (black vertical lines).
+4. It performs the polynomial fit by selecting a degree and then clicking the button (green curve).
 
 After closing the windows, the program will prompt the user whether to save the changes and a name to output the new AMDL model. The following summary will be displayed on the console:
 
@@ -116,15 +116,15 @@ The program provides the following three functionalities:
 
 ![alt text](https://github.com/stefano-rgc/glitch_add_and_remove/blob/master/exemplary_images/add_glitch1.gif)
 
-Short explanation:
+Short explanation of the figure:
 
-1.First, it zooms in on the region where the glitch will be added.
-2.Second, it selects the interval where the glitch will be added. (red curve).
-3.Third, it uses the cursor to add and define the parameters of the Gaussian (green curve):
+1. It zooms in on the region where the glitch will be added.
+2. It selects the interval where the glitch will be added. (red curve).
+3. It uses the cursor to add and define the parameters of the Gaussian (green curve):
   - The cursor's position when pressing click defines the location.
   - The cursor's position when releasing click defines the peak.
   - The distance between the pressing and releasing clicks defines the FWHM.
-4.Fourth, Check how the changes look in the AMDL file (right panel).
+4. Check how the changes look in the AMDL file (right panel).
 
 ### (2) Comparison with the mode wavelength
 
@@ -144,10 +144,10 @@ Short explanation:
 
 Short explanation:
 
-1.First, it zooms in until the resolution of the meshpoints is visible.
-2.Second, adds a glitch which is undersampled.
-3.Third, it selects the interval where to remesh the model. Then a dialog pops up asking how many new meshpoints add between each original pair.
-4.Fourth, it selects the interval where the glitch will be added. Then adds it not by the cursor but by clicking the button (**done this way because, if not new Gaussian parameters are specificated, then the program uses the ones from the previous Gaussian, in this case, the undersampled Gaussian**).
+1. It zooms in until the resolution of the meshpoints is visible.
+2. It adds a glitch which is undersampled.
+3. It selects the interval where to remesh the model. Then a dialog pops up asking how many new meshpoints add between each original pair.
+4. It selects the interval where the glitch will be added. Then adds it not by the cursor but by clicking the button (**done this way because, if not new Gaussian parameters are specificated, then the program uses the ones from the previous Gaussian, in this case, the undersampled Gaussian**).
 
 After closing the windows, the program will prompt the user whether to save the changes and a name to output the new AMDL model.
 
