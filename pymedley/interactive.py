@@ -123,19 +123,37 @@ def fit_polynomial(figure, axes, line2D, verbose=False):
         from pymedley.interactive import fit_polynomial
 
         # Sample data
-        x = np.arange(-2,2,0.05)
-        y = (x-1)*(x-0.5)*(x-0.2)*(x-0.1)*(x-2)*(x-1.5)*(x+1)*(x+1.3)*(x+1.1)*(x+2)
-
-        # Making a plot
-        figure = plt.figure()
+        x = np.arange(0.25,1.50,0.01) 
+        sigma=0.05; mu=1
+        gaussian = 1/(sigma*np.sqrt(2*np.pi))*np.exp(-(x-mu)**2/(2*sigma**2) )
+        y = 1 + 0.5*x - x**2 + 0.5*x**3 + 0.1*gaussian 
+        
+        # Making a plot  
+        figure = plt.figure()  
         axes = plt.axes()
-        line2d, = plt.plot(x,y) # Mind the comma!
-
+        axes.set_title('Example')
+        axes.set_ylabel('Y data')
+        axes.set_xlabel('X data')
+        line2d, = plt.plot(x,y) # Mind the comma!                                           
+         
         # Fitting a polynomial interactively
         mask, fit = fit_polynomial(figure, axes, line2d)
 
         # Integration of the fit values into the original data
-        y[mask] = fit
+        y_modified = y.copy()
+        y_modified[mask] = fit
+
+        # Plot original data and modified data
+        figure = plt.figure()  
+        axes = plt.axes()
+        axes.set_title('Example')
+        axes.set_ylabel('Y data')
+        axes.set_xlabel('X data')
+        plt.plot(x,y,label='original data', color='black')
+        plt.plot(x,y_modified,label='modified data', color='red')
+        plt.legend(loc='best')
+        plt.show()
+
 
     '''
 
@@ -148,7 +166,7 @@ def fit_polynomial(figure, axes, line2D, verbose=False):
         title = 'Info'
         t0 = '>> To enable recognition of the left and right buttons, first hit enter <<'
         t1 = '> The left button selects the interval for the fit by dragging on the plot.'
-        t2 = '> The right button selects an interval excluded to by excluded from the fit.'
+        t2 = '> The right button selects an interval to be excluded from the fit.'
         t3 = '> Press the button [Add fit] to generate the fit.'
         t4 = '> Mark the checkbox [Not refresh fit] to overplot different fits.'
         t5 = '> When closing plot, you will be asked whether to save the changes.'
