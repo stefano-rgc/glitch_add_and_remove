@@ -50,7 +50,7 @@ Short explanation of the figure:
 
 1. It zooms in on the glitch-like feature.
 2. It selects the interval to be considered for the fit (red curve).
-3. It selects the interval to be included from the fit (black vertical lines).
+3. It selects the interval to be excluded from the fit (black vertical lines).
 4. It performs the polynomial fit by selecting a degree and then clicking the button (green curve).
 
 After closing the windows, the program will prompt the user whether to save the changes and a name to output the new AMDL model. The following summary will be displayed on the console:
