@@ -11,7 +11,9 @@ position, amplitude, and width) implies, in the best-case scenario, to explore t
 parameters until the desired glitch is attained. This approach has clear disadvantages like:
 
 (1) no warranty to generate the pursued glitch,
+
 (2) time consuming, and 
+
 (3) preclusion of a direct comparison of the effect of different glitches on the seismic data.
 
 This is a Python program that allows to artificially add/remove a Gaussian-like
