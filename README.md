@@ -179,3 +179,7 @@ $python3 -W ignore add_gaussian_A4.py model.amdl -t adipls -l 0.00568 -w 0.00048
 ```
 $python3 add_gaussian_A4.py -h
 ```
+
+# Reference paper
+
+https://doi.org/10.1007/978-3-030-55336-4_38
